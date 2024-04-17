@@ -1,13 +1,24 @@
 import tkinter as tk
 from tkinter import scrolledtext
 
-def explain_query():
+from project import SQLValidator
+
+
+def explain_query():  # use sql_query to process the queries
+    validator = SQLValidator()
     sql_query = query_entry.get("1.0", tk.END).strip()  # Get the input SQL query
-    result_text = "Explaining costs for the query: " + sql_query  # Placeholder text
+    result = validator.is_valid_sql(sql_query)
+    if False in result:
+        result_text = f"Error in basic syntax check:\n {result[1]}"
+    else:
+        result_text = "Explaining costs for the query: \n" + sql_query  # Placeholder text
+        # You will want to use the sql query from here only
+
     results_box.config(state=tk.NORMAL)  # Enable editing
     results_box.delete("1.0", tk.END)  # Clear existing content
     results_box.insert(tk.END, result_text)  # Insert new results
     results_box.config(state=tk.DISABLED)  # Disable editing
+
 
 # Create the main window
 window = tk.Tk()
