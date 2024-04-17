@@ -15,7 +15,7 @@ class SQLValidator:
             return False
 
         # Then, use SQLite engine to check if the SQL can be executed
-        return self.database_syntax_check(query), ""
+        return self.database_syntax_check(query)
 
     def basic_syntax_check(self, query):
         try:
@@ -34,11 +34,11 @@ class SQLValidator:
         except sqlite3.Error as e:
             print(f"SQL execution error: {e}")
             return False, e
-        return True
+        return True, ""
 
 
 # Example usage:
 validator = SQLValidator()
 print(validator.is_valid_sql("SELECT * FROM table;"))  # False, as 'table' does not exist
-# print(validator.is_valid_sql("SELECT * FROM sqlite_master;"))  # True, sqlite_master should exist
-# print(validator.is_valid_sql("SELECT FROM WHERE;"))  # False, incorrect SQL
+print(validator.is_valid_sql("SELECT * FROM sqlite_master;"))  # True, sqlite_master should exist
+print(validator.is_valid_sql("SELECT FROM WHERE;"))  # False, incorrect SQL
