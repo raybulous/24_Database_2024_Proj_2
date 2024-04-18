@@ -1,24 +1,40 @@
 import psycopg2
+import json
+import os
+import pickle
 from explain import Relation
 
 class PostgresqlDatabase:
     def __init__(self, dbname, username, password, host="localhost", port="5432"): 
-        self.conn = psycopg2.connect("dbname={} user={} password={} host={} port={}".format(dbname, username, password, host, port))
-        self.cur = self.conn.cursor()
+        try:
+            self.conn = psycopg2.connect("dbname={} user={} password={} host={} port={}".format(dbname, username, password, host, port))
+            self.cur = self.conn.cursor()
+        except:
+            self.conn = None
+            self.cur = None
+            print("Failed to connect to db")
         self.explain_result = None
+        self.query_directory = 'query_results/'
     
     def __del__(self):
-        self.cur.close()
-        self.conn.close()
+        if self.conn is not None:
+            self.cur.close()
+            self.conn.close()
 
     def close(self):
-        self.cur.close()
-        self.conn.close()
+        if self.conn is not None:
+            self.cur.close()
+            self.conn.close()
 
     def getQEP(self, query):
-        self.cur.execute("EXPLAIN (FORMAT JSON) " + query)
-        self.explain_result = self.cur.fetchone()[0][0]
-        return self.explain_result
+        self.query = query
+        if self.conn is not None:
+            self.cur.execute("EXPLAIN (FORMAT JSON) " + query)
+            self.explain_result = self.cur.fetchone()[0][0]
+            return self.explain_result
+        else: 
+            filename = self.query_to_json_file_name(self.query)
+            self.explain_result = self.JSON_to_QEP(filename)
     
     def display_plan(self):
         if self.explain_result is not None:
@@ -78,9 +94,43 @@ class PostgresqlDatabase:
         try:
             self.cur.execute("SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'")
             table_names = [row[0] for row in self.cur.fetchall()]
-            relation_details = {}
+            self.relation_details = {}
             for name in table_names:
-                relation_details[name] = self.get_relation_details(name)
-            return relation_details
+                self.relation_details[name] = self.get_relation_details(name)
+            return self.relation_details
+        except:
+            try:
+                return self.pkl_to_relation()
+            except:
+                print('data.pkl not found')
         finally:
             pass
+
+    def relation_to_pkl(self):
+        file_path = os.path.join(self.query_directory, 'data.pkl')
+        with open(file_path, 'wb') as file:
+            pickle.dump(self.relation_details, file)   
+
+    def pkl_to_relation(self):
+        file_path = os.path.join(self.query_directory, 'data.pkl')
+        with open(file_path, 'rb') as file:
+            self.relation_details = pickle.load(file)
+            return self.relation_details
+
+    def query_to_json_file_name(self, query):
+        file_name = query.replace(' ', '_').replace('*', '').replace("'", '').replace(';', '') + '.json'
+        return file_name
+
+    def QEP_to_JSON(self):
+        file_name = self.query_to_json_file_name(self.query)
+        file_path = os.path.join(self.query_directory, file_name)
+        with open(file_path, 'w') as json_file:
+            json.dump(self.explain_result, json_file)
+
+    def JSON_to_QEP(self, json_file):
+        file_path = os.path.join(self.query_directory, json_file)
+        with open(file_path, 'r') as json_file:
+            self.explain_result = json.load(json_file)
+            return self.explain_result
+
+    
