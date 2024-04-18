@@ -86,7 +86,7 @@ class PostgresqlDatabase:
             self.cur.execute(f"SELECT relpages FROM pg_class WHERE relname = %s", (relation_name,))
             blocks_in_storage = self.cur.fetchone()[0]
 
-            relation = Relation(relation_name, columns, distinct_count, num_tuples, blocks_in_storage)
+            relation = Relation(relation_name, columns, distinct_counts, num_tuples, blocks_in_storage)
             return relation
         finally:
             pass
