@@ -35,6 +35,7 @@ class PostgresqlDatabase:
         else: 
             filename = self.query_to_json_file_name(self.query)
             self.explain_result = self.JSON_to_QEP(filename)
+            return self.explain_result
     
     def display_plan(self):
         if self.explain_result is not None:
