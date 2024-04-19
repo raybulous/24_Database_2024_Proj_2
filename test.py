@@ -1,6 +1,8 @@
 from postgresql import PostgresqlDatabase
+from databaseServerInfo import DBNAME, USERNAME, PASSWORD, HOST, PORT
 
-db = PostgresqlDatabase("TPC-H", "postgres", "comsolag")
+
+db = PostgresqlDatabase(DBNAME, USERNAME, PASSWORD, HOST, PORT)
 
 db.get_all_table_details()
 #db.relation_to_pkl()

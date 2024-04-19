@@ -5,7 +5,7 @@ import pickle
 from explain import Relation
 
 class PostgresqlDatabase:
-    def __init__(self, dbname, username, password, host="localhost", port="5432"): 
+    def __init__(self, dbname, username, password, host, port):
         try:
             self.conn = psycopg2.connect("dbname={} user={} password={} host={} port={}".format(dbname, username, password, host, port))
             self.cur = self.conn.cursor()
