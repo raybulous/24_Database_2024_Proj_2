@@ -1,0 +1,14 @@
+{
+    "Plan": {
+        "Node Type": "Seq Scan",
+        "Parallel Aware": false,
+        "Async Capable": false,
+        "Relation Name": "customer",
+        "Alias": "c",
+        "Startup Cost": 0.0,
+        "Total Cost": 5850.0,
+        "Plan Rows": 53596,
+        "Plan Width": 158,
+        "Filter": "((c_mktsegment = 'FURNITURE'::bpchar) OR (c_mktsegment = 'BUILDING'::bpchar))"
+    }
+}
