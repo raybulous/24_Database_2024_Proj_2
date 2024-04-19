@@ -1,56 +1,32 @@
-import psycopg2
-import sqlparse
-from databaseServerInfo import DBNAME, USERNAME, PASSWORD, HOST
+# Create the main window and pass it to the QEPInterface
+import tkinter as tk
+from tkinter import scrolledtext
+import json
+import os
 
-class SQLValidator:
-    def __init__(self):
-        try:
-            self.connection = psycopg2.connect(
-                dbname=DBNAME,
-                user=USERNAME,
-                password=PASSWORD,
-                host=HOST
-            )
-        except psycopg2.Error as e:
-            print(f"Failed to connect to the database: {e}")
-            self.connection = None  # Ensure connection is None if it fails
-
-    def __del__(self):
-        if self.connection:
-            self.connection.close()
-
-    def is_valid_sql(self, query):
-        if not self.basic_syntax_check(query):
-            return False, "Syntax error"
-
-        success, error = self.database_syntax_check(query)
-        return success, error
-
-    def basic_syntax_check(self, query):
-        try:
-            parsed = sqlparse.parse(query)
-            return bool(parsed)
-        except Exception as e:
-            print(f"Error in basic syntax check: {e}")
-            return False
-
-    def database_syntax_check(self, query):
-        try:
-            with self.connection:
-                cursor = self.connection.cursor()
-                cursor.execute(query)
-                cursor.close()
-        except psycopg2.Error as e:
-            print(f"SQL execution error: {e}")
-            return False, str(e)
-        return True, ""
+from interface import QEPInterface
 
 
-# Example usage:
-validator = SQLValidator()
-if validator.connection is not None:
-    print(validator.is_valid_sql("SELECT * FROM table;"))  # Likely False, 'table' does not exist
-    print(validator.is_valid_sql("SELECT * FROM information_schema.tables;"))  # True
-    print(validator.is_valid_sql("SELECT FROM WHERE;"))  # False, incorrect SQL
-else:
-    print("Database connection could not be established.")
+
+
+
+def handle_query(sql_query):
+    app.results_box.config(state=tk.NORMAL)
+    app.results_box.insert(tk.END, f"Processing query: {sql_query}")
+    app.results_box.config(state=tk.DISABLED)
+    # Include logic to process the query and potentially fetch and display results
+
+    #TODO: replace json_path with new json generated from query
+    json_path = "query_results/SELECT_c.c_mktsegment,_COUNT()_as_order_count_FROM_orders_o_JOIN_customer_c_ON_o.o_custkey_=_c.c_custkey_GROUP_BY_c.c_mktsegment.json"
+    with open(json_path, 'r') as file:
+        json_data = json.load(file)
+        app.display_qep(json_data)
+
+    array_1 = ["Seq Scan", 10, "Hash", 0, "Seq Scan", 10, "Hash Join", 20, "Aggregate", 10, "Sort", 30, "Gather Merge", 10, "Aggregate", 10]
+    app.display_array(array_1)
+
+
+
+root = tk.Tk()
+app = QEPInterface(root, on_query_submit=handle_query)
+root.mainloop()
