@@ -17,6 +17,7 @@ def explain_query():  # use sql_query to process the queries
     results_box.config(state=tk.NORMAL)  # Enable editing
     results_box.delete("1.0", tk.END)  # Clear existing content
     results_box.insert(tk.END, result_text)  # Insert new results
+    results_box.insert(tk.END, "Hello")  # Insert new results
     results_box.config(state=tk.DISABLED)  # Disable editing
 
 
