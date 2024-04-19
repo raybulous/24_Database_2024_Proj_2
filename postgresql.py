@@ -134,4 +134,29 @@ class PostgresqlDatabase:
             self.explain_result = json.load(json_file)
             return self.explain_result
 
+    def is_valid_sql(self, query):
+        if not self.basic_syntax_check(query):
+            return False, "Syntax error"
+
+        success, error = self.database_syntax_check(query)
+        return success, error
+
+    def basic_syntax_check(self, query):
+        try:
+            parsed = sqlparse.parse(query)
+            return bool(parsed)
+        except Exception as e:
+            print(f"Error in basic syntax check: {e}")
+            return False
+
+    def database_syntax_check(self, query):
+        try:
+            with self.connection:
+                cursor = self.connection.cursor()
+                cursor.execute(query)
+                cursor.close()
+        except psycopg2.Error as e:
+            print(f"SQL execution error: {e}")
+            return False, str(e)
+        return True, ""
     

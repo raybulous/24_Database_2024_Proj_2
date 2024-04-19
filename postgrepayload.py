@@ -178,4 +178,3 @@ class PostgresqlDatabase1:
             return False, str(e)
         return True, ""
 
-    # Remaining methods are unchanged
