@@ -17,9 +17,11 @@ class CostCalculator:
         cost = 0#based on operator do cost estimator
         return cost
 
+    import re
+
     def process_join_condition(join_condition):
-        # This pattern is adjusted to better capture typical SQL conditions
-        pattern = r'(\w+\.\w+)\s*([=><]+)\s*(\w+\.\w+)|(AND|OR)'
+        # This pattern captures comparison operators including '=', '>', '<', '<>', and their possible combinations
+        pattern = r'(\w+\.\w+)\s*([=><!]+)\s*(\w+\.\w+)|(AND|OR)'
         tokens = re.split(r'\s+(AND|OR)\s+', join_condition)  # Split by logical operators
 
         conditions = []
@@ -30,7 +32,7 @@ class CostCalculator:
                 conditions.append(token)
             else:
                 # Match comparison operations within the tokens
-                match = re.search(r'(\w+\.\w+)\s*([=><]+)\s*(\w+\.\w+)', token)
+                match = re.search(r'(\w+\.\w+)\s*([=><!]+)\s*(\w+\.\w+)', token)
                 if match:
                     conditions.append(match.groups())
 
@@ -39,10 +41,18 @@ class CostCalculator:
         while i < len(conditions):
             if isinstance(conditions[i], tuple):
                 left_operand, operator, right_operand = conditions[i]
+                # Normalize operator symbols for clarity in processing
+                if operator == '!=':  # Often used as an alternative to '<>'
+                    operator = '<>'
                 print(f"Processing condition: {left_operand} {operator} {right_operand}")
             elif conditions[i] in ('AND', 'OR'):
                 print(f"Logical operator: {conditions[i]}")
             i += 1
+
+    # Example usage:
+    join_condition = "a.id <> b.id AND a.value > b.value OR c.status = d.status"
+    process_join_condition(join_condition)
+
 
 class NodeType(ABC):
     @abstractmethod
