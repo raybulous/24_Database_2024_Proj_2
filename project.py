@@ -4,17 +4,22 @@ from tkinter import scrolledtext
 import json
 import os
 
+from costCalculator import CostCalculator
 from interface import QEPInterface
-
-
-
-
+from postgresql import PostgresqlDatabase
+from databaseServerInfo import DBNAME, USERNAME, PASSWORD, HOST, PORT
 
 def handle_query(sql_query):
     app.results_box.config(state=tk.NORMAL)
     app.results_box.insert(tk.END, f"Processing query: {sql_query}")
     app.results_box.config(state=tk.DISABLED)
-    # Include logic to process the query and potentially fetch and display results
+
+    # TODO: Include logic to process the query and potentially fetch and display results
+    test = db.getQEP(sql_query)
+    calc = CostCalculator(db.relation_details, 1024)
+    calc.calculate_cost(db.explain_result)
+    array_output = calc.get_output()
+
 
     #TODO: replace json_path with new json generated from query
     json_path = "query_results/SELECT_c.c_mktsegment,_COUNT()_as_order_count_FROM_orders_o_JOIN_customer_c_ON_o.o_custkey_=_c.c_custkey_GROUP_BY_c.c_mktsegment.json"
@@ -27,6 +32,13 @@ def handle_query(sql_query):
 
 
 
+db = PostgresqlDatabase(DBNAME, USERNAME, PASSWORD, HOST, PORT)
+
+# Interface stuff
 root = tk.Tk()
 app = QEPInterface(root, on_query_submit=handle_query)
 root.mainloop()
+
+
+# TODO: You can paste this without the quotes into the interface, it will work
+# query = "SELECT * FROM customer WHERE c_mktsegment = 'BUILDING' ORDER BY c_acctbal DESC LIMIT 10;"
