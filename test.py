@@ -32,26 +32,36 @@ def format_qep(plan: Dict, level: int = 0, relation_details: Dict[str, Relation]
     result = f"{indent}Node Type: {plan['Node Type']}\n"
 
     # Pre-fetch the buffer size
-    B = 1000000  # Example buffer size, adjust based on your actual DB setup
+    B = 16384  # TODO: Put in report the calculation
 
     # Initialize N with 0 which will be updated if there are nested plans
     N = 0
+    intermediate_data_handled = False
 
     # Recursively process sub-plans first to ensure bottom-up calculation
     subplan_results = ""
     if 'Plans' in plan:
         for subplan in plan['Plans']:
             subplan_results += format_qep(subplan, level + 1, relation_details)
-            sub_relation_name = subplan.get('Relation Name', None)
-            if sub_relation_name and sub_relation_name in relation_details:
-                sub_N = relation_details[sub_relation_name].numPages
-                N = max(N, sub_N)  # Get the maximum N from subplans
+            # Aggregate intermediate data volumes where explicit relation names might be missing
+            if 'Plan Rows' in subplan:
+                N = max(N, subplan['Plan Rows'])  # Use the output rows as a proxy for volume
+                intermediate_data_handled = True
 
     # Append subplans results after processing
     result += subplan_results
 
-    # Fetch M, the number of pages for the current relation if available
-    M = relation_details.get(plan.get('Relation Name'), Relation(0)).numPages
+    # Fetch M, using Plan Rows if no direct relation is associated
+    if 'Relation Name' in plan and plan['Relation Name'] in relation_details:
+        M = relation_details[plan['Relation Name']].numPages
+    elif 'Plan Rows' in plan:
+        M = plan['Plan Rows']  # Use plan rows as a proxy for intermediate data volume
+    else:
+        M = 0
+
+    # Adjust N if not set by subplans, use M as a fallback
+    if not intermediate_data_handled and 'Plan Rows' in plan:
+        N = plan['Plan Rows']
 
     # Calculate cost for the current operation
     cost = calculateCost(plan['Node Type'], Relation(M), Relation(N), B)
@@ -70,6 +80,7 @@ def format_qep(plan: Dict, level: int = 0, relation_details: Dict[str, Relation]
 
 
 
+
 def load_json_file(filename: str) -> Dict:
     """Load and return the JSON data from a file."""
     with open(filename, 'r') as file:
@@ -77,7 +88,7 @@ def load_json_file(filename: str) -> Dict:
     return data
 
 
-filename = "query_results/SELECT__FROM_customer_WHERE_c_mktsegment_=_BUILDING_ORDER_BY_c_acctbal_DESC_LIMIT_10.json"
+filename = "query_results/SELECT_c.c_mktsegment,_COUNT()_as_order_count_FROM_orders_o_JOIN_customer_c_ON_o.o_custkey_=_c.c_custkey_GROUP_BY_c.c_mktsegment.json"
 qep_data = load_json_file(filename)
 formatted_qep_output = format_qep(qep_data['Plan'], 0, relation_details)
 print(formatted_qep_output)
