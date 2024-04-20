@@ -1,5 +1,0 @@
-DBNAME = "TPC-H"
-USERNAME = "postgres"
-PASSWORD = "comsolag"
-HOST = "localhost"
-PORT = "5432"

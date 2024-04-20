@@ -9,16 +9,17 @@ This project is a cost estimation of a given QEP provided by postgresql when a q
     pip install -r requirements.txt
     ```
 
-## Configuration
-
-1. Open `databaseServerInfo.py` and change the details to match your database information.
-
 ## Running the Program
 
-- If you have the database:
-  - After configuring the database details, you can run the program and input your SQL queries. The program will estimate the cost and display the query execution plan.
+Click 'Set Database Info' to enter the database info and the program will connect with it
+
+- If you have the database and connects successfully:
+  - You can input your SQL queries and click the 'Process Query' button and the program will estimate the cost and display the query execution plan.
 - If you do not have the database:
-  - You can still run the program using a set of prepared queries provided. Simply run the program and input the prepared queries.
+  - Click 'OK' on the database info dialog to use a pre-prepared details of all relation.
+- If the program failed to establish a connection:
+  - The program will default to using the pre-prepared details of all relation.
+  - You can only input a set of prepared queries provided. Simply run the program and input the prepared queries.
   ```
   SELECT * FROM customer WHERE c_mktsegment = 'BUILDING' ORDER BY c_acctbal DESC LIMIT 10;
   ```
@@ -42,7 +43,6 @@ This project is a cost estimation of a given QEP provided by postgresql when a q
 ## Usage
 
 1. Run the program.
+2. Enter your database information.
 2. Enter your SQL query in the prompt.
 3. The estimated cost of the query will be shown on the left, and the query execution plan will be shown on the right.
-
-

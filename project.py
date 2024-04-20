@@ -6,7 +6,6 @@ import os
 
 from explain import CostCalculator, PostgresqlDatabase
 from interface import QEPInterface
-from databaseServerInfo import DBNAME, USERNAME, PASSWORD, HOST, PORT
 
 def handle_query(sql_query):
     app.results_box.config(state=tk.NORMAL)
