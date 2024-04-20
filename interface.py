@@ -172,9 +172,9 @@ class QEPInterface:
         display_content = ""
 
         # Format the array into a string with each element on a new line from bottom to top
-        for index in range(len(operations) - 1, -1, -2):
-            operation = operations[index-1] if index > 0 else ""
-            cost = operations[index]
+        for index in range(len(operations)-1, -1, -1):
+            operation = operations[index][0]
+            cost = operations[index][1]
             display_content = f"{operation} {cost}\n" + display_content  # Prepend to display from bottom to top
 
         # Display in the qep_box

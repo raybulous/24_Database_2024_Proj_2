@@ -1,9 +1,11 @@
 import math
 import re
+import copy
 
 class CostCalculator:
     def __init__(self, relation_details, buffer_size):
-        self.relation_details = relation_details
+        self.relation_details_original = relation_details
+        self.relation_details = copy.deepcopy(relation_details)
         self.buffer_size = buffer_size
         self.output = []
 
@@ -11,6 +13,8 @@ class CostCalculator:
         self.buffer_size = buffer_size
 
     def calculate_cost(self, qep):
+        self.output = []
+        self.relation_details = copy.deepcopy(self.relation_details_original)
         self.calculate_cost_subplan(qep['Plan'])
 
     def calculate_cost_subplan(self, plan):
