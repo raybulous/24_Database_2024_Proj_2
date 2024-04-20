@@ -85,12 +85,19 @@ class QEPInterface:
     
     def initialize_database(self):
         if self.db_info:
-            self.db = PostgresqlDatabase(self.db_info['dbname'], self.db_info['username'],
-                                         self.db_info['password'], self.db_info['host'], self.db_info['port'])
-            print('Initializing...')
-            self.db.get_all_table_details()
-            self.calc = CostCalculator(self.db.relation_details, 1024)
-            print('Done getting all table details')
+            dialog = InitializationDialog(self.master)  # Create the dialog
+
+            try:
+                self.db = PostgresqlDatabase(self.db_info['dbname'], self.db_info['username'],
+                                            self.db_info['password'], self.db_info['host'], self.db_info['port'])
+                self.db.get_all_table_details()
+                self.calc = CostCalculator(self.db.relation_details, 1024)
+
+                dialog.update_message("Done getting all table details and database is ready.")
+            except Exception as e:
+                dialog.update_message(f"Failed to initialize database: {e}")
+            
+            self.master.after(2000, dialog.close)  # Close the dialog after 2 seconds
 
     def process_query(self):
         # Get the input SQL query
@@ -150,3 +157,19 @@ class QEPInterface:
             result += self.format_qep_data(data["Plan"], depth)  # Process the single plan
         result += "\n"
         return result
+    
+class InitializationDialog(tk.Toplevel):
+    def __init__(self, master):
+        super().__init__(master)
+        self.title("Database Initialization")
+        self.geometry("300x100")
+        self.label = tk.Label(self, text="Initializing database connection...")
+        self.label.pack(expand=True, pady=20)
+        self.update()
+
+    def update_message(self, message):
+        self.label.config(text=message)
+        self.update()
+
+    def close(self):
+        self.destroy()

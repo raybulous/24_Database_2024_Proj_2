@@ -5,6 +5,7 @@ import pickle
 import math
 import re
 import copy
+import sqlparse
 
 class Relation:
     def __init__(self, name, attributes, distinct_values, num_tuples=0, blocks_in_storage=0):
@@ -54,13 +55,18 @@ class PostgresqlDatabase:
     def getQEP(self, query):
         self.query = query
         if self.conn is not None:
-            self.cur.execute("EXPLAIN (FORMAT JSON) " + query)
-            self.explain_result = self.cur.fetchone()[0][0]
-            return self.explain_result
+            try:
+                self.conn.rollback()
+                self.cur.execute("EXPLAIN (FORMAT JSON) " + query)
+                self.explain_result = self.cur.fetchone()[0][0]
+                return self.explain_result
+            except Exception as e:
+                print(f"Failed to execute query: {e}")
+                return None
         else: 
             filename = self.query_to_json_file_name(self.query)
             self.explain_result = self.JSON_to_QEP(filename)
-            return self.explain_result
+            return self.explain_result                                                                              
     
     def display_plan(self):
         if self.explain_result is not None:
@@ -161,10 +167,9 @@ class PostgresqlDatabase:
 
     def is_valid_sql(self, query):
         if not self.basic_syntax_check(query):
-            return False, "Syntax error"
-
-        success, error = self.database_syntax_check(query)
-        return success, error
+            return False
+        else:
+            return True
 
     def basic_syntax_check(self, query):
         try:
@@ -174,16 +179,16 @@ class PostgresqlDatabase:
             print(f"Error in basic syntax check: {e}")
             return False
 
-    def database_syntax_check(self, query):
-        try:
-            with self.connection:
-                cursor = self.connection.cursor()
-                cursor.execute(query)
-                cursor.close()
-        except psycopg2.Error as e:
-            print(f"SQL execution error: {e}")
-            return False, str(e)
-        return True, ""
+    # def database_syntax_check(self, query):
+    #     try:
+    #         with self.connection:
+    #             cursor = self.connection.cursor()
+    #             cursor.execute(query)
+    #             cursor.close()
+    #     except psycopg2.Error as e:
+    #         print(f"SQL execution error: {e}")
+    #         return False, str(e)
+    #     return True, ""
 
 class CostCalculator:
     def __init__(self, relation_details, buffer_size):
