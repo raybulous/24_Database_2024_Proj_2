@@ -1,8 +1,39 @@
 import tkinter as tk
-from tkinter import scrolledtext
+from tkinter import scrolledtext, simpledialog, Label, Entry, Button
 import json
 import os
+from explain import PostgresqlDatabase, CostCalculator
 
+class DatabaseConfigDialog(simpledialog.Dialog):
+    def body(self, master):
+        Label(master, text="Database Name:").grid(row=0)
+        Label(master, text="Username:").grid(row=1)
+        Label(master, text="Password:").grid(row=2)
+        Label(master, text="Host:").grid(row=3)
+        Label(master, text="Port:").grid(row=4)
+
+        self.dbname_entry = Entry(master)
+        self.username_entry = Entry(master)
+        self.password_entry = Entry(master, show='*')
+        self.host_entry = Entry(master)
+        self.port_entry = Entry(master)
+
+        self.dbname_entry.grid(row=0, column=1)
+        self.username_entry.grid(row=1, column=1)
+        self.password_entry.grid(row=2, column=1)
+        self.host_entry.grid(row=3, column=1)
+        self.port_entry.grid(row=4, column=1)
+
+        return self.dbname_entry
+    
+    def apply(self):
+        self.result = {
+            'dbname': self.dbname_entry.get(),
+            'username': self.username_entry.get(),
+            'password': self.password_entry.get(),
+            'host': self.host_entry.get(),
+            'port': self.port_entry.get()
+        }
 
 class QEPInterface:
     def __init__(self, master, on_query_submit=None):
@@ -17,8 +48,15 @@ class QEPInterface:
 
         # Initialize widgets
         self.init_widgets()
+        self.db_info = {}
+        self.db = None
+        self.calc = None
 
     def init_widgets(self):
+        # Button to input database details
+        self.db_button = tk.Button(self.master, text="Set Database Info", command=self.set_database_info)
+        self.db_button.grid(row=0, column=1, padx=10, pady=10, sticky="we")
+
         # Create a label for the SQL query input
         label_input = tk.Label(self.master, text="Enter SQL Query:")
         label_input.grid(row=0, column=0, padx=10, pady=10, sticky="we")
@@ -38,6 +76,21 @@ class QEPInterface:
         # Scrolled text widget for displaying the QEP JSON
         self.qep_box = scrolledtext.ScrolledText(self.master, state='disabled', height=10, width=70)
         self.qep_box.grid(row=3, column=1, padx=10, pady=10, sticky="we")
+
+    def set_database_info(self):
+        dialog = DatabaseConfigDialog(self.master)
+        if dialog.result:
+            self.db_info = dialog.result
+            self.initialize_database()
+    
+    def initialize_database(self):
+        if self.db_info:
+            self.db = PostgresqlDatabase(self.db_info['dbname'], self.db_info['username'],
+                                         self.db_info['password'], self.db_info['host'], self.db_info['port'])
+            print('Initializing...')
+            self.db.get_all_table_details()
+            self.calc = CostCalculator(self.db.relation_details, 1024)
+            print('Done getting all table details')
 
     def process_query(self):
         # Get the input SQL query

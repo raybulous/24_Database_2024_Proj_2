@@ -10,21 +10,20 @@ from databaseServerInfo import DBNAME, USERNAME, PASSWORD, HOST, PORT
 
 def handle_query(sql_query):
     app.results_box.config(state=tk.NORMAL)
-    app.results_box.insert(tk.END, f"Processing query: {sql_query}")
+    app.results_box.insert(tk.END, f"Processing query: {sql_query}\n")
     app.results_box.config(state=tk.DISABLED)
 
-    qep = db.getQEP(sql_query)
-    calc.calculate_cost(qep)
-    array_output = calc.get_output()
+    qep = app.db.getQEP(sql_query)
+    app.calc.calculate_cost(qep)
 
     app.display_qep(qep)
+    app.display_array(app.calc.get_output())
 
-    app.display_array(calc.get_output())
 
-db = PostgresqlDatabase(DBNAME, USERNAME, PASSWORD, HOST, PORT)
-db.get_all_table_details()
-calc = CostCalculator(db.relation_details, 1024)
-print('Done getting all table details')
+# db = PostgresqlDatabase(DBNAME, USERNAME, PASSWORD, HOST, PORT)
+# db.get_all_table_details()
+# calc = CostCalculator(db.relation_details, 1024)
+# print('Done getting all table details')
 
 # Interface stuff
 root = tk.Tk()
