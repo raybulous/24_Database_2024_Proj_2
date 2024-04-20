@@ -19,11 +19,21 @@ This project is a cost estimation of a given QEP provided by postgresql when a q
   - After configuring the database details, you can run the program and input your SQL queries. The program will estimate the cost and display the query execution plan.
 - If you do not have the database:
   - You can still run the program using a set of prepared queries provided. Simply run the program and input the prepared queries.
-  - SELECT * FROM customer WHERE c_mktsegment = 'BUILDING' ORDER BY c_acctbal DESC LIMIT 10;
-  - SELECT c_phone FROM orders o JOIN customer c ON o.o_custkey = c.c_custkey WHERE c.c_mktsegment = 'FURNITURE';
-  - SELECT c.c_mktsegment, COUNT(*) as order_count FROM orders o JOIN customer c ON o.o_custkey = c.c_custkey GROUP BY c.c_mktsegment;
-  - SELECT * FROM customer c WHERE c.c_mktsegment = 'FURNITURE' OR c.c_mktsegment = 'BUILDING';
-  - SELECT * FROM customer c WHERE c.c_mktsegment != 'FURNITURE';
+  ```
+  SELECT * FROM customer WHERE c_mktsegment = 'BUILDING' ORDER BY c_acctbal DESC LIMIT 10;
+  ```
+  ```
+  SELECT c_phone FROM orders o JOIN customer c ON o.o_custkey = c.c_custkey WHERE c.c_mktsegment = 'FURNITURE';
+  ```
+  ```
+  SELECT c.c_mktsegment, COUNT(*) as order_count FROM orders o JOIN customer c ON o.o_custkey = c.c_custkey GROUP BY c.c_mktsegment;
+  ```
+  ```
+  SELECT * FROM customer c WHERE c.c_mktsegment = 'FURNITURE' OR c.c_mktsegment = 'BUILDING';
+  ```
+  ```
+  SELECT * FROM customer c WHERE c.c_mktsegment != 'FURNITURE';
+  ```
 
 ## Note
 
