@@ -1,4 +1,4 @@
-# Your Project Name
+# Database System Principles Project 2
 
 This project is a cost estimation of a given QEP provided by postgresql when a query is provided.
 
